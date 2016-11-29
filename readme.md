@@ -4,6 +4,7 @@ A simple, lightweight and fast API for Sadjad University of Technology
 ## Current End Points
 ### `/v1/student_schedule`
 Sample: `https://sephr.me/v1/student_schedule?username=92412147&password=XXXXXXXX`
+
 Supported methods are `post` and `get`
 
 ## Important Privacy Note
