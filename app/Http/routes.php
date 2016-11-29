@@ -11,6 +11,10 @@
 |
 */
 
-$app->get('/v1/student_schedule', ['uses' => 'ApiController@stu_class']);
 $app->get('/', ['uses' => 'ApiController@end_points']);
+
+$app->get('/v1/student_schedule', ['uses' => 'ApiController@stu_class']);
 $app->post('/v1/student_schedule', ['uses' => 'ApiController@stu_class']);
+
+$app->get('/v1/internet_credit', ['uses' => 'ApiController@internet_credit']);
+$app->post('/v1/internet_credit', ['uses' => 'ApiController@internet_credit']);

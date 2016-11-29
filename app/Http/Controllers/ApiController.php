@@ -32,6 +32,100 @@ class ApiController extends Controller
         ], 200);
     }
 
+    public function internet_credit(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+        $auth = http_build_query([
+            'normal_username' => $request->input('username'),
+            'normal_password' => $request->input('password')
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL,'http://178.236.34.178/IBSng/user/');
+        curl_setopt($ch,CURLOPT_POST,2);
+// insert fucking pass and user from DB !
+        curl_setopt($ch,CURLOPT_POSTFIELDS,'normal_username=94432145&normal_password=4710565899');
+        curl_setopt($ch,CURLOPT_POSTFIELDS,$auth);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers = array();
+        $headers[] = 'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $result = curl_exec($ch);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($result, 0, $header_size);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_setopt($ch,CURLOPT_URL,'http://178.236.34.178/IBSng/user/home.php');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $result = curl_exec($ch);
+        function get_string_between($string, $start, $end)
+        {
+            $string = ' ' . $string;
+            $ini = strpos($string, $start);
+            if ($ini == 0) return '';
+            $ini += strlen($start);
+            $len = strpos($string, $end, $ini) - $ini;
+            return substr($string, $ini, $len);
+        }
+        $v = get_string_between($result, "<tr class=\"List_Row_darkColor\" >","<sub>G</sub>");
+        $hajm =  (explode(" ",$v));
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+
+        if (!isset($hajm[185])) {
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
+
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => [
+                'remaining_credits' => $hajm[185] + 0,
+                'remaining_credits_formatted' => $hajm[185] . ' GB',
+            ]
+        ]);
+    }
+
     public function stu_class(Request $request)
     {
         $errors = [];
