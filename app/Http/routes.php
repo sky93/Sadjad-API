@@ -18,3 +18,7 @@ $app->post('/v1/student_schedule', ['uses' => 'ApiController@stu_class']);
 
 $app->get('/v1/internet_credit', ['uses' => 'ApiController@internet_credit']);
 $app->post('/v1/internet_credit', ['uses' => 'ApiController@internet_credit']);
+
+$app->get('/v1/self_service_credits', ['uses' => 'ApiController@self_service_credits']);
+$app->post('/v1/self_service_credits', ['uses' => 'ApiController@self_service_credits']);
+
