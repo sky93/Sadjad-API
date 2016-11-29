@@ -26,7 +26,8 @@ class ApiController extends Controller
                 [
                     'end_points' =>
                         [
-                            '/v1/student_schedule'
+                            '/v1/student_schedule',
+                            '/v1/internet_credit'
                         ]
                 ]
         ], 200);
