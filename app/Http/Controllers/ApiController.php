@@ -393,6 +393,6 @@ class ApiController extends Controller
                     'connect_time' =>$time
                 ],
             'data' => $final_days
-        ]);
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }
