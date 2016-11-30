@@ -22,3 +22,6 @@ $app->post('/v1/internet_credit', ['uses' => 'ApiController@internet_credit']);
 $app->get('/v1/self_service_credits', ['uses' => 'ApiController@self_service_credits']);
 $app->post('/v1/self_service_credits', ['uses' => 'ApiController@self_service_credits']);
 
+$app->get('/v1/self_service_menu', ['uses' => 'ApiController@self_service_menu']);
+$app->post('/v1/self_service_menu', ['uses' => 'ApiController@self_service_menu']);
+
