@@ -13,6 +13,28 @@ class ApiController extends Controller
         return ((float)$usec + (float)$sec);
     }
 
+     /**
+     * Converts bytes to B, KB , MB, ..., YB
+     *
+     * @param $bytes
+     * @param int $precision
+     * @param string $dec_point
+     * @param string $thousands_sep
+     * @return string
+     */
+    private function formatBytes($bytes, $precision = 2, $dec_point = '.', $thousands_sep = ',')
+    {
+        $negative = $bytes < 0;
+        if ($negative) $bytes *= -1;
+        $size = $bytes;
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $power = $size > 0 ? floor(log($size, 1024)) : 0;
+        $sz = $size / pow(1024, $power);
+        if ($sz - round($sz) == 0) $precision = 0;
+        if ($negative) $sz *= -1;
+        return number_format($sz, $precision, $dec_point, $thousands_sep) . ' ' . $units[$power];
+    }
+
     private function get_string_between($string, $start, $end)
     {
         $string = ' ' . $string;
@@ -271,16 +293,16 @@ class ApiController extends Controller
 
         $result = curl_exec($ch);
 
-        $v = $this->get_string_between($result, "<tr class=\"List_Row_darkColor\" >","<sub>G</sub>");
-        $hajm =  (explode(" ",$v));
+        $cr = $this->get_string_between($result, '<td class="Form_Content_Row_Left_2Col_light"> مقداراعتبار فعلی :</td>'," UNITS</td>");
+        $cr = str_replace(',','', $cr);
+        $cr = str_replace('<td class="Form_Content_Row_Right_2Col_light">','', $cr);
+        $v = trim($cr);
+
         $time_end = $this->microtime_float();
         $time = $time_end - $time_start;
 
-        if (!isset($hajm[185])) {
-            $time_end = $this->microtime_float();
-            $time = $time_end - $time_start;
-
-            return response()->json([
+        if ($v == '') {
+               return response()->json([
                 'meta' =>
                     [
                         'code' => 403,
@@ -298,8 +320,8 @@ class ApiController extends Controller
                     'connect_time' =>$time
                 ],
             'data' => [
-                'remaining_credits' => $hajm[185] + 0,
-                'remaining_credits_formatted' => $hajm[185] . ' GB',
+                'remaining_credits' => round($v * 1024 * 1024),
+                'remaining_credits_formatted' => $this->formatBytes(round($v * 1024 * 1024)),
             ]
         ]);
     }
