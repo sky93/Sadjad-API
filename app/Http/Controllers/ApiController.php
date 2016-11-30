@@ -146,8 +146,6 @@ class ApiController extends Controller
         $ch = curl_init();
         curl_setopt($ch,CURLOPT_URL,'http://178.236.34.178/IBSng/user/');
         curl_setopt($ch,CURLOPT_POST,2);
-// insert fucking pass and user from DB !
-        curl_setopt($ch,CURLOPT_POSTFIELDS,'normal_username=94432145&normal_password=4710565899');
         curl_setopt($ch,CURLOPT_POSTFIELDS,$auth);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
@@ -232,9 +230,6 @@ class ApiController extends Controller
         curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/Interim.php');
         curl_setopt($ch,CURLOPT_POST, 2);
         curl_setopt($ch,CURLOPT_POSTFIELDS,$auth);
-//        curl_setopt($ch,CURLOPT_POSTFIELDS,'StID=93412147&UserPassword=09372759548');
-        //curl_setopt($ch,CURLOPT_POSTFIELDS,'StID=92412147&UserPassword=23982398');
-        //curl_setopt($ch,CURLOPT_POSTFIELDS,'StID=92412180&UserPassword=highclass');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
         curl_setopt($ch, CURLOPT_HEADER, 1);
@@ -386,12 +381,6 @@ class ApiController extends Controller
             'day_of_week' => 5,
             'classes' => $day[5]
         ];
-
-//        echo json_encode(, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-//echo $result;
-
-
-
 
         $time_end = $this->microtime_float();
         $time = $time_end - $time_start;
