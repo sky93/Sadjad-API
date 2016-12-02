@@ -137,7 +137,7 @@ class ApiController extends Controller
         $final_days[] = [
             'name_of_week' => 'دوشنبه',
             'day_of_week' => 2,
-            'menu' => $this->get_string_between($x, "<TD id=\"lblghaza9\" class=\"ghaza\" colspan=\"3\"><span id=\"lblMon_ghazaC3\">","</span>") == ' ' ? null : $this->get_string_between($x, "<TD id=\"lblghaza9\" class=\"ghaza\" colspan=\"3\"><span id=\"lblMon_ghazaC3\">","</span>")
+            'menu' => $this->get_string_between($x, "<TD id=\"lblghaza8\" class=\"ghaza\" colspan=\"3\"><span id=\"lblMon_ghazaN3\">","</span>") == ' ' ? null : $this->get_string_between($x, "<TD id=\"lblghaza8\" class=\"ghaza\" colspan=\"3\"><span id=\"lblMon_ghazaN3\">","</span>")
         ];
         $final_days[] = [
             'name_of_week' => 'سه‌شنبه',
@@ -147,7 +147,7 @@ class ApiController extends Controller
         $final_days[] = [
             'name_of_week' => 'چهارشنبه',
             'day_of_week' => 4,
-            'menu' => $this->get_string_between($x, "<TD id=\"lblghaza15\" class=\"ghaza\" colspan=\"3\"><span id=\"lblWed_ghazaC5\">","</span>") == ' ' ? null : $this->get_string_between($x, "<TD id=\"lblghaza15\" class=\"ghaza\" colspan=\"3\"><span id=\"lblWed_ghazaC5\">","</span>")
+            'menu' => $this->get_string_between($x, "<TD id=\"lblghaza14\" class=\"ghaza\" colspan=\"3\"><span id=\"lblWed_ghazaN5\">","</span>") == ' ' ? null : $this->get_string_between($x, "<TD id=\"lblghaza15\" class=\"ghaza\" colspan=\"3\"><span id=\"lblWed_ghazaC5\">","</span>")
         ];
         $final_days[] = [
             'name_of_week' => 'پنج‌شنبه',
