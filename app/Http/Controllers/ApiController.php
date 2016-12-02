@@ -430,25 +430,26 @@ class ApiController extends Controller
                 $cl = str_replace(',',' - ', $cl);
                 $cl = str_replace('كلاس','', $cl);
                 $cl = str_replace('  ',' ', $cl);
+                $cl = str_replace('-','', $cl);
 
                 if (strpos($cl, 'زوج')) {
                     array_push($day[$day_iterate]['even'], [
                         'time' => $time,
-                        'subject' => $cl
+                        'subject' => str_replace('زوج','', $cl)
                     ]);
                 } elseif (strpos($cl, 'فرد')) {
                     array_push($day[$day_iterate]['odd'], [
                         'time' => $time,
-                        'subject' => $cl
+                        'subject' => str_replace('فرد','', $cl)
                     ]);
                 } else {
                     array_push($day[$day_iterate]['even'], [
                         'time' => $time,
-                        'subject' => $cl
+                        'subject' => str_replace('زوج','', $cl)
                     ]);
                     array_push($day[$day_iterate]['odd'], [
                         'time' => $time,
-                        'subject' => $cl
+                        'subject' => str_replace('فرد','', $cl)
                     ]);
                 }
                 if (strpos($raw[$i], 'پروژه') === false){
