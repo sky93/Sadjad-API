@@ -444,10 +444,12 @@ class ApiController extends Controller
         $tables = $dom->getElementsByTagName('table');
         $rows = $tables->item(1)->getElementsByTagName('tr');
         $raw = [];
+        $colspan = [];
         foreach ($rows as $row) {
             $tds = $row->getElementsByTagName('td');
             foreach ($tds as $td) {
                 $raw[] = $td->textContent;
+                $colspan[] = $td->getattribute('colspan');
             }
         }
         $day = [
@@ -506,13 +508,17 @@ class ApiController extends Controller
                         'subject' => str_replace('فرد','', $cl)
                     ]);
                 }
-                if (strpos($raw[$i], 'پروژه') === false){
-                    $time += 2;
-                    $hour += 2;
-                }else{
-                    $time += 1;
-                    $hour += 1;
-                }
+//                if (strpos($raw[$i], 'پروژه') !== false){
+//                    $time += 1;
+//                    $hour += 1;
+//                } else {
+//                    $time += 2;
+//                    $hour += 2;
+//                } // poor coding abilities!
+
+                $time += $colspan[$i];
+                $hour += $colspan[$i];
+
             }
             if ($hour >= 15) {
                 $hour = 0;
