@@ -150,6 +150,19 @@ class ApiController extends Controller
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $result = curl_exec($ch);
+        if (strlen($result) == 928) {
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
         $dom = new \domDocument;
         @$dom->loadHTML($result);
         $dom->preserveWhiteSpace = false;
