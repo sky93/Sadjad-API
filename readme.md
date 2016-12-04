@@ -25,6 +25,13 @@ Sample: `https://sephr.me/v1/self_service_menu?username=92412147&password=XXXXXX
 
 Supported methods are `post` and `get`
 
+---
+### `/v1/exams`
+Sample: `https://sephr.me/v1/exams?username=92412147&password=XXXXXXXX`
+
+Supported methods are `post` and `get`
+
+Gets all exams with their dates of the current semester.
 
 ## Important Privacy Note
 As you see in the code no information are stored. We don't even use databases or log files. The username or password you provide is only used for loging in to the student panel.

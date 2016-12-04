@@ -25,3 +25,5 @@ $app->post('/v1/self_service_credits', ['uses' => 'ApiController@self_service_cr
 $app->get('/v1/self_service_menu', ['uses' => 'ApiController@self_service_menu']);
 $app->post('/v1/self_service_menu', ['uses' => 'ApiController@self_service_menu']);
 
+$app->get('/v1/exams', ['uses' => 'ApiController@exams']);
+$app->post('/v1/exams', ['uses' => 'ApiController@exams']);

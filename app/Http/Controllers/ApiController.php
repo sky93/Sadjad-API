@@ -7,13 +7,35 @@ use Illuminate\Http\Request;
 class ApiController extends Controller
 {
 
+    private function convert_date($string)
+    {
+        date_default_timezone_set('Asia/Tehran');
+        $startDate = '2017-01-09';
+        strtotime($startDate);
+        if($string == 'اول') return date('Y-m-d', strtotime($startDate . ' +1 day'));
+        else if($string == 'دوم') return date('Y-m-d', strtotime($startDate . ' +2 day'));
+        else if($string == 'سوم') return date('Y-m-d', strtotime($startDate . ' +3 day'));
+        else if($string == 'چهارم') return date('Y-m-d', strtotime($startDate . ' +4 day'));
+        else if($string == 'پنجم') return date('Y-m-d', strtotime($startDate . ' +5 day'));
+        else if($string == 'ششم') return date('Y-m-d', strtotime($startDate . ' +6 day'));
+        else if($string == 'هفتم') return date('Y-m-d', strtotime($startDate . ' +7 day'));
+        else if($string == 'هشتم') return date('Y-m-d', strtotime($startDate . ' +8 day'));
+        else if($string == 'نهم') return date('Y-m-d', strtotime($startDate . ' +9 day'));
+        else if($string == 'دهم') return date('Y-m-d', strtotime($startDate . ' +10 day'));
+        else if($string == 'یازدهم') return date('Y-m-d', strtotime($startDate . ' +11 day'));
+        else if($string == 'دوازدهم') return date('Y-m-d', strtotime($startDate . ' +12 day'));
+        else if($string == 'سیزدهم') return date('Y-m-d', strtotime($startDate . ' +13 day'));
+        return 0;
+    }
+
+
     private function microtime_float()
     {
         list($usec, $sec) = explode(" ", microtime());
         return ((float)$usec + (float)$sec);
     }
 
-     /**
+    /**
      * Converts bytes to B, KB , MB, ..., YB
      *
      * @param $bytes
@@ -61,11 +83,114 @@ class ApiController extends Controller
                             '/v1/internet_credit',
                             '/v1/self_service_credits',
                             '/v1/self_service_menu',
+                            '/v1/exams',
                         ]
                 ]
         ], 200);
     }
 
+
+    public function exams(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+
+        $persian_numbers = [
+            '۰' => '0',
+            '۱' => '1',
+            '۲' => '2',
+            '۳' => '3',
+            '۴' => '4',
+            '۵' => '5',
+            '۶' => '6',
+            '۷' => '7',
+            '۸' => '8',
+            '۹' => '9',
+        ];
+
+        $auth = http_build_query([
+            'StID' => strtr($request->input('username'), $persian_numbers),
+            'UserPassword' => strtr($request->input('password'), $persian_numbers)
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL,'http://stu.sadjad.ac.ir/Interim.php');
+        curl_setopt($ch,CURLOPT_POST,2);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $auth);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_exec($ch);
+        curl_setopt($ch,CURLOPT_URL,'http://stu.sadjad.ac.ir/strcss/ShowStExamDays.php');
+        curl_setopt($ch,CURLOPT_POSTFIELDS,'EduYear=1395&semester=1&show_exam_dates=نمایش');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $result = curl_exec($ch);
+        $dom = new \domDocument;
+        @$dom->loadHTML($result);
+        $dom->preserveWhiteSpace = false;
+        $tables = $dom->getElementsByTagName('table');
+        $rows = $tables->item(0)->getElementsByTagName('tr');
+        $raw = [];
+        $result = [];
+        foreach ($rows as $row) {
+            $tds = $row->getElementsByTagName('td');
+            foreach ($tds as $td) {
+                $raw[] = $td->textContent;
+
+            }
+        }
+        $i =2;
+
+        while($i<count($raw))
+        {
+            $result [] =
+                [
+                    'course'=> $raw[$i],
+                    'teacher'=> $raw[$i+=1],
+                    'formatted_date' => $this->convert_date($raw[$i+=1]) == 0 ? null : $this->convert_date($raw[$i]),
+                    'date' => strtotime( $this->convert_date($raw[$i]) ) == false ? null : strtotime( $this->convert_date($raw[$i]) )
+                ];
+            $i+=3;
+        }
+
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => $result
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 
     public function self_service_menu(Request $request)
     {
@@ -341,7 +466,7 @@ class ApiController extends Controller
         $time = $time_end - $time_start;
 
         if ($v == '') {
-               return response()->json([
+            return response()->json([
                 'meta' =>
                     [
                         'code' => 403,
