@@ -376,7 +376,7 @@ class ApiController extends Controller
         $time_end = $this->microtime_float();
         $time = $time_end - $time_start;
 
-        if (!$etebar) {
+        if (strpos($x, 'نام کاربری و کلمه عبور خود را وارد نمائید') !== false) {
             $time_end = $this->microtime_float();
             $time = $time_end - $time_start;
 
@@ -399,7 +399,7 @@ class ApiController extends Controller
                 ],
             'data' => [
                 'remaining_credits' => $etebar + 0,
-                'remaining_credits_formatted' => $etebar . ' Rials',
+                'remaining_credits_formatted' => $etebar + 0 . ' Rials',
             ]
         ]);
 
