@@ -162,49 +162,51 @@ class ApiController extends Controller
         @$dom->loadHTML($result);
         $dom->preserveWhiteSpace = false;
         $tables = $dom->getElementsByTagName('table');
-        $rows = $tables->item(0)->getElementsByTagName('tr');
-        $raw = [];
-        $results = [];
-        foreach ($rows as $row) {
-            $tds = $row->getElementsByTagName('td');
-            foreach ($tds as $td) {
-                $raw[] = $td->textContent;
+        if ( $tables->length ) {
+            $rows = $tables->item(0)->getElementsByTagName('tr');
+            $raw = [];
+            $results = [];
+            foreach ($rows as $row) {
+                $tds = $row->getElementsByTagName('td');
+                foreach ($tds as $td) {
+                    $raw[] = $td->textContent;
+                }
             }
+            $i = 0;
+
+            $date = new jDateTime(true, true, 'Asia/Tehran');
+            while ($i < count($raw)) {
+                $borrow_date = explode('/', $this->date_convert($raw[$i + 4]));
+                $borrow_date = $date->mktime(0, 0, 0, $borrow_date[1], $borrow_date[2], $borrow_date[0]);
+
+                $borrow_date_ends = explode('/', $this->date_convert($raw[$i + 5]));
+                $borrow_date_ends = $date->mktime(0, 0, 0, $borrow_date_ends[1], $borrow_date_ends[2], $borrow_date_ends[0]);
+                $results [] =
+                    [
+                        'title' => $raw[$i + 1],
+                        'author' => $raw[$i + 2],
+                        'borrow_date' => [
+                            'timezone' => 'Asia/Tehran',
+                            'date' => (int)$borrow_date,
+                            'date_formatted' => date("Y-m-d"),
+                            'persian_date' => $date->date("Y-m-d", $borrow_date, false),
+                            'persian_date_formatted' => $date->date("l، j F Y", $borrow_date),
+                        ],
+                        'borrow_date_ends' => [
+                            'timezone' => 'Asia/Tehran',
+                            'date' => (int)$borrow_date_ends,
+                            'date_formatted' => date("Y-m-d"),
+                            'persian_date' => $date->date("Y-m-d", $borrow_date_ends, false),
+                            'persian_date_formatted' => $date->date("l، j F Y", $borrow_date_ends),
+                        ],
+                        'times_of_borrow' => $raw[$i + 6] + 0,
+                        'times_of_borrow_limit' => $raw[$i + 7] + 0
+                    ];
+                $i += 9;
+            }
+        } else {
+            $results = null;
         }
-        $i = 0;
-
-        $date = new jDateTime(true, true, 'Asia/Tehran');
-        while($i<count($raw))
-        {
-            $borrow_date = explode('/', $this->date_convert($raw[$i+4]));
-            $borrow_date = $date->mktime(0,0,0,$borrow_date[1],$borrow_date[2],$borrow_date[0]);
-
-            $borrow_date_ends = explode('/', $this->date_convert($raw[$i+5]));
-            $borrow_date_ends = $date->mktime(0,0,0,$borrow_date_ends[1],$borrow_date_ends[2],$borrow_date_ends[0]);
-            $results [] =
-                [
-                    'title'=> $raw[$i + 1],
-                    'author'=> $raw[$i + 2],
-                    'borrow_date'=> [
-                        'timezone' => 'Asia/Tehran',
-                        'date' => (int)$borrow_date,
-                        'date_formatted'=> date("Y-m-d"),
-                        'persian_date'=> $date->date("Y-m-d", $borrow_date, false),
-                        'persian_date_formatted'=> $date->date("l، j F Y", $borrow_date),
-                    ],
-                    'borrow_date_ends' =>  [
-                        'timezone' => 'Asia/Tehran',
-                        'date' => (int)$borrow_date_ends,
-                        'date_formatted'=> date("Y-m-d"),
-                        'persian_date'=> $date->date("Y-m-d", $borrow_date_ends, false),
-                        'persian_date_formatted'=> $date->date("l، j F Y", $borrow_date_ends),
-                    ],
-                    'times_of_borrow' => $raw[$i + 6] + 0,
-                    'times_of_borrow_limit' => $raw[$i + 7] + 0
-                ];
-            $i+=9;
-        }
-
         $time_end = $this->microtime_float();
         $time = $time_end - $time_start;
 
