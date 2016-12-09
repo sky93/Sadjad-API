@@ -27,3 +27,6 @@ $app->post('/v1/self_service_menu', ['uses' => 'ApiController@self_service_menu'
 
 $app->get('/v1/exams', ['uses' => 'ApiController@exams']);
 $app->post('/v1/exams', ['uses' => 'ApiController@exams']);
+
+$app->get('/v1/library', ['uses' => 'ApiController@library']);
+$app->post('/v1/library', ['uses' => 'ApiController@library']);

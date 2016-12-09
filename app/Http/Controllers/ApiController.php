@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\lib\jDateTime;
 
 class ApiController extends Controller
 {
@@ -35,6 +36,26 @@ class ApiController extends Controller
         return number_format($sz, $precision, $dec_point, $thousands_sep) . ' ' . $units[$power];
     }
 
+    private function date_convert($date)
+    {
+
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        $persian_numbers = [
+            '۰' => '0', '٠' => '0',
+            '۱' => '1', '١' => '1',
+            '۲' => '2', '٢' => '2',
+            '۳' => '3', '٣' => '3',
+            '۴' => '4', '٤' => '4',
+            '۵' => '5', '٥' => '5',
+            '۶' => '6', '٦' => '6',
+            '۷' => '7', '٧' => '7',
+            '۸' => '8', '٨' => '8',
+            '۹' => '9', '٩' => '9',
+        ];
+
+       return strtr($date, $persian_numbers);
+    }
+
     private function get_string_between($string, $start, $end)
     {
         $string = ' ' . $string;
@@ -62,11 +83,141 @@ class ApiController extends Controller
                             '/v1/self_service_credits',
                             '/v1/self_service_menu',
                             '/v1/exams',
+                            '/v1/library',
                         ]
                 ]
         ], 200);
     }
 
+
+    public function library(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+
+         // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        $persian_numbers = [
+            '۰' => '0', '٠' => '0',
+            '۱' => '1', '١' => '1',
+            '۲' => '2', '٢' => '2',
+            '۳' => '3', '٣' => '3',
+            '۴' => '4', '٤' => '4',
+            '۵' => '5', '٥' => '5',
+            '۶' => '6', '٦' => '6',
+            '۷' => '7', '٧' => '7',
+            '۸' => '8', '٨' => '8',
+            '۹' => '9', '٩' => '9',
+        ];
+
+        $auth = http_build_query([
+            'login' => strtr($request->input('username'), $persian_numbers),
+            'password' => strtr($request->input('password'), $persian_numbers)
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL, 'http://library.sadjad.ac.ir/opac/borrower.php');
+        curl_setopt($ch,CURLOPT_POST,2);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $auth . '&ok=تایید');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if (strpos(curl_exec($ch), 'کد کاربری یا کلمه عبور اشتباه است') !== false) {
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
+        curl_setopt($ch,CURLOPT_URL,'http://library.sadjad.ac.ir/opac/borrower.php?tab=loan&lvl=all');
+        $result = curl_exec($ch);
+        $dom = new \domDocument;
+        @$dom->loadHTML($result);
+        $dom->preserveWhiteSpace = false;
+        $tables = $dom->getElementsByTagName('table');
+        $rows = $tables->item(0)->getElementsByTagName('tr');
+        $raw = [];
+        $results = [];
+        foreach ($rows as $row) {
+            $tds = $row->getElementsByTagName('td');
+            foreach ($tds as $td) {
+                $raw[] = $td->textContent;
+            }
+        }
+        $i = 0;
+
+        $date = new jDateTime(true, true, 'Asia/Tehran');
+        while($i<count($raw))
+        {
+            $borrow_date = explode('/', $this->date_convert($raw[$i+4]));
+            $borrow_date = $date->mktime(0,0,0,$borrow_date[1],$borrow_date[2],$borrow_date[0]);
+
+            $borrow_date_ends = explode('/', $this->date_convert($raw[$i+5]));
+            $borrow_date_ends = $date->mktime(0,0,0,$borrow_date_ends[1],$borrow_date_ends[2],$borrow_date_ends[0]);
+            $results [] =
+                [
+                    'title'=> $raw[$i + 1],
+                    'author'=> $raw[$i + 2],
+                    'borrow_date'=> [
+                        'timezone' => 'Asia/Tehran',
+                        'date' => (int)$borrow_date,
+                        'date_formatted'=> date("Y-m-d"),
+                        'persian_date'=> $date->date("Y-m-d", $borrow_date, false),
+                        'persian_date_formatted'=> $date->date("l، j F Y", $borrow_date),
+                    ],
+                    'borrow_date_ends' =>  [
+                        'timezone' => 'Asia/Tehran',
+                        'date' => (int)$borrow_date_ends,
+                        'date_formatted'=> date("Y-m-d"),
+                        'persian_date'=> $date->date("Y-m-d", $borrow_date_ends, false),
+                        'persian_date_formatted'=> $date->date("l، j F Y", $borrow_date_ends),
+                    ],
+                    'times_of_borrow' => $raw[$i + 6] + 0,
+                    'times_of_borrow_limit' => $raw[$i + 7] + 0
+                ];
+            $i+=9;
+        }
+
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => $results
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 
     public function exams(Request $request)
     {
@@ -89,7 +240,7 @@ class ApiController extends Controller
             ], 400);
         }
 
-        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+         // If user's input has Arabic/Persian numbers, we change it to standard english numbers
         $persian_numbers = [
             '۰' => '0', '٠' => '0',
             '۱' => '1', '١' => '1',
@@ -204,7 +355,7 @@ class ApiController extends Controller
             ], 400);
         }
 
-         // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
         $persian_numbers = [
             '۰' => '0', '٠' => '0',
             '۱' => '1', '١' => '1',
