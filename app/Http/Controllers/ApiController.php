@@ -7,28 +7,6 @@ use Illuminate\Http\Request;
 class ApiController extends Controller
 {
 
-    private function convert_date($string)
-    {
-        date_default_timezone_set('Asia/Tehran');
-        $startDate = '2017-01-09';
-        strtotime($startDate);
-        if($string == 'اول') return date('Y-m-d', strtotime($startDate . ' +1 day'));
-        else if($string == 'دوم') return date('Y-m-d', strtotime($startDate . ' +2 day'));
-        else if($string == 'سوم') return date('Y-m-d', strtotime($startDate . ' +3 day'));
-        else if($string == 'چهارم') return date('Y-m-d', strtotime($startDate . ' +4 day'));
-        else if($string == 'پنجم') return date('Y-m-d', strtotime($startDate . ' +5 day'));
-        else if($string == 'ششم') return date('Y-m-d', strtotime($startDate . ' +6 day'));
-        else if($string == 'هفتم') return date('Y-m-d', strtotime($startDate . ' +7 day'));
-        else if($string == 'هشتم') return date('Y-m-d', strtotime($startDate . ' +8 day'));
-        else if($string == 'نهم') return date('Y-m-d', strtotime($startDate . ' +9 day'));
-        else if($string == 'دهم') return date('Y-m-d', strtotime($startDate . ' +10 day'));
-        else if($string == 'یازدهم') return date('Y-m-d', strtotime($startDate . ' +11 day'));
-        else if($string == 'دوازدهم') return date('Y-m-d', strtotime($startDate . ' +12 day'));
-        else if($string == 'سیزدهم') return date('Y-m-d', strtotime($startDate . ' +13 day'));
-        return 0;
-    }
-
-
     private function microtime_float()
     {
         list($usec, $sec) = explode(" ", microtime());
@@ -185,8 +163,7 @@ class ApiController extends Controller
                 [
                     'course'=> $raw[$i],
                     'teacher'=> $raw[$i+=1],
-                    'formatted_date' => $this->convert_date($raw[$i+=1]) == 0 ? null : $this->convert_date($raw[$i]),
-                    'date' => strtotime( $this->convert_date($raw[$i]) ) == false ? null : strtotime( $this->convert_date($raw[$i]) )
+                    'day' => $raw[$i+=1]
                 ];
             $i+=3;
         }
