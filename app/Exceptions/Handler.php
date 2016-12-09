@@ -8,6 +8,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -45,6 +46,32 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        return parent::render($request, $e);
+        if ($e instanceof NotFoundHttpException) {
+            $response = 'Sorry, the page you are looking for could not be found.';
+        } else {
+            $response = [
+                'error' => 'Sorry, something went wrong.'
+            ];
+        }
+
+        // If the app is in debug mode
+        if (env('APP_DEBUG')) {
+            // Add the exception class name, message and stack trace to response
+            $response['exception'] = get_class($e); // Reflection might be better here
+            $response['message'] = $e->getMessage();
+            $response['trace'] = $e->getTrace();
+        }
+
+        // Grab the HTTP status code from the Exception with default response of 400
+        $status = $e->getStatusCode() ? $e->getStatusCode() : 400;
+
+
+        // Return a JSON response with the response array and status code
+        // based on local or production mode
+        return env('APP_ENV') == 'local' ? parent::render($request, $e) : response()->json(['meta' => [
+            'error_type' => "NotFoundException",
+            'code' => $status,
+            'description' => $response
+        ]], $status);
     }
 }
