@@ -2,8 +2,10 @@
 A simple, lightweight and fast API for Sadjad University of Technology
 
 ## Current End Points
-### `/v1/student_schedule`
+### `/v1/student_schedule` or `/v2/stu/schedule`
 Sample: `https://api.sadjad.ac.ir/v1/student_schedule?username=92412147&password=XXXXXXXX`
+
+Or: `https://api.sadjad.ac.ir/v2/stu/schedule?username=92412147&password=XXXXXXXX`
 
 Supported methods are `post` and `get`
 
@@ -40,6 +42,14 @@ Sample: `https://api.sadjad.ac.ir/v1/library?username=92412147&password=XXXXXXXX
 Supported methods are `post` and `get`
 
 Returns useful information about library account.
+
+---
+### `/v2/stu/profile`
+Sample: `https://api.sadjad.ac.ir/v2/stu/profile?username=92412147&password=XXXXXXXX`
+
+Supported methods are `post` and `get`
+
+Returns useful information about stu (student) account.
 
 ## Important Privacy Note
 As you see in the code no information are stored. We don't even use databases or log files. The username or password you provide is only used for loging in to the student panel.

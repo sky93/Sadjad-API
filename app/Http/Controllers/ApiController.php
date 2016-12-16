@@ -53,7 +53,7 @@ class ApiController extends Controller
             '۹' => '9', '٩' => '9',
         ];
 
-       return strtr($date, $persian_numbers);
+        return strtr($date, $persian_numbers);
     }
 
     private function get_string_between($string, $start, $end)
@@ -78,15 +78,176 @@ class ApiController extends Controller
                 [
                     'end_points' =>
                         [
-                            '/v1/student_schedule',
-                            '/v1/internet_credit',
-                            '/v1/self_service_credits',
-                            '/v1/self_service_menu',
-                            '/v1/exams',
-                            '/v1/library',
-                        ]
+                            'v1' => [
+                                '/v1/student_schedule',
+                                '/v1/internet_credit',
+                                '/v1/self_service_credits',
+                                '/v1/self_service_menu',
+                                '/v1/exams',
+                                '/v1/library',
+                            ],
+                            'v2' => [
+                                '/v2/stu/profile',
+                                '/v2/stu/schedule'
+                            ]
+                        ],
+                    'source' => 'https://github.com/sut-it/Sadjad-API',
+                    'manual' => 'https://github.com/sut-it/Sadjad-API#current-end-points',
+                    'privacy' => 'https://github.com/sut-it/Sadjad-API#important-privacy-note',
+                    'licence' => 'https://github.com/sut-it/Sadjad-API#license',
                 ]
         ], 200);
+    }
+
+
+    public function v2_stu_profile(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        $persian_numbers = [
+            '۰' => '0', '٠' => '0',
+            '۱' => '1', '١' => '1',
+            '۲' => '2', '٢' => '2',
+            '۳' => '3', '٣' => '3',
+            '۴' => '4', '٤' => '4',
+            '۵' => '5', '٥' => '5',
+            '۶' => '6', '٦' => '6',
+            '۷' => '7', '٧' => '7',
+            '۸' => '8', '٨' => '8',
+            '۹' => '9', '٩' => '9',
+        ];
+
+        $auth = http_build_query([
+            'StID' => strtr($request->input('username'), $persian_numbers),
+            'UserPassword' => strtr($request->input('password'), $persian_numbers)
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/Interim.php');
+        curl_setopt($ch,CURLOPT_POST,2);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $auth);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_exec($ch);
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/strcss/ShowStFileNo.php');
+        $result = curl_exec($ch);
+        $pic_url = 'http://stu.sadjad.ac.ir/strcss/';
+        $pic_url .= $this->get_string_between($result, '<img height=150 width=100 src="','">');
+        $dom = new \domDocument;
+        @$dom->loadHTML($result);
+        if (strpos($dom->textContent, ' درخواستبنا به دلایل امنیتی ادامه استفاده شما از سیستم منوط به ورود مجدد به سیستم استلطفا برای ورود مجدد ب')){
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
+        $dom->preserveWhiteSpace = false;
+        $tables = $dom->getElementsByTagName('table');
+        $rows = $tables->item(0)->getElementsByTagName('tr');
+        $row = [];
+        foreach ($rows as $r) {
+            $tds = $r->getElementsByTagName('td');
+            foreach ($tds as $td) {
+                $row[] = $td->textContent;
+            }
+        }
+        $nice = [
+            'ID_num' => $row[1],
+            'name_lastname' => $row[3],
+            'level' => $row[5],
+            'college' => $row[7],
+            'last_semester_score' => $row[13],
+            'education_status' => $row[17]
+        ];
+
+        $rows = $tables->item(1)->getElementsByTagName('tr');
+        $row = [];
+        foreach ($rows as $r) {
+            $tds = $r->getElementsByTagName('td');
+            foreach ($tds as $td) {
+                $row[] = $td->textContent;
+            }
+        }
+        $nice['name_latin'] = $row[4];
+        $nice['lastname_latin'] = $row[6];
+        $nice['Id_card_num'] = $row[11];
+        $nice['phone_number'] = $row[21];
+        $nice['start_year'] = $row[25];
+        $nice['address'] = $row[47];
+
+        $file = app()->basePath('public/static/') . sha1($nice['Id_card_num']) . '.jpg';
+        if (
+            ( file_exists($file) && time() > filemtime ($file) + 31 * 24 * 60 * 60 ) ||
+            ! file_exists($file)
+        ) {
+            @unlink($file);
+            $fp = fopen ($file, 'w+');
+            curl_setopt($ch,CURLOPT_URL, $pic_url);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_VERBOSE, 0);
+            curl_exec($ch);
+
+            curl_close($ch);
+            fclose($fp);
+            $nice['profile_picture'] = [
+                'public_url' => app('url')->asset('static/' . sha1($nice['Id_card_num']) . '.jpg'),
+                'cache' => 'MISS',
+                'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
+            ];
+        } else {
+            $nice['profile_picture'] = [
+                'public_url' => app('url')->asset('static/' . sha1($nice['Id_card_num']) . '.jpg'),
+                'cache' => 'HIT',
+                'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
+            ];
+        }
+
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => $nice
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+
     }
 
 
@@ -111,7 +272,7 @@ class ApiController extends Controller
             ], 400);
         }
 
-         // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
         $persian_numbers = [
             '۰' => '0', '٠' => '0',
             '۱' => '1', '١' => '1',
@@ -242,7 +403,7 @@ class ApiController extends Controller
             ], 400);
         }
 
-         // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
         $persian_numbers = [
             '۰' => '0', '٠' => '0',
             '۱' => '1', '١' => '1',
