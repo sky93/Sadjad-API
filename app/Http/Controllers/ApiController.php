@@ -184,11 +184,10 @@ class ApiController extends Controller
             }
         }
         $nice = [
-            'ID_num' => $row[1],
-            'name_lastname' => $row[3],
-            'level' => $row[5],
+            'name' => $row[3],
+            'degree' => $row[5],
             'college' => $row[7],
-            'last_semester_score' => $row[13],
+            'last_semester_score' => (float)$row[13],
             'education_status' => $row[17]
         ];
 
@@ -200,14 +199,14 @@ class ApiController extends Controller
                 $row[] = $td->textContent;
             }
         }
-        $nice['name_latin'] = $row[4];
-        $nice['lastname_latin'] = $row[6];
-        $nice['Id_card_num'] = $row[11];
+        $nice['name_in_English'] = $row[4];
+        $nice['lastname_in_English'] = $row[6];
+        $nice['ID_card_number'] = $row[11];
         $nice['phone_number'] = $row[21];
-        $nice['start_year'] = $row[25];
-        $nice['address'] = $row[47];
+        $nice['start_education_year'] = (int)$row[25];
+        $nice['address'] = $row[49];
 
-        $file = app()->basePath('public/static/') . sha1($nice['Id_card_num']) . '.jpg';
+        $file = app()->basePath('public/static/') . sha1($nice['ID_card_number']) . '.jpg';
         if (
             ( file_exists($file) && time() > filemtime ($file) + 31 * 24 * 60 * 60 ) ||
             ! file_exists($file)
@@ -223,13 +222,13 @@ class ApiController extends Controller
             curl_close($ch);
             fclose($fp);
             $nice['profile_picture'] = [
-                'public_url' => app('url')->asset('static/' . sha1($nice['Id_card_num']) . '.jpg'),
+                'public_url' => app('url')->asset('static/' . sha1($nice['ID_card_number']) . '.jpg'),
                 'cache' => 'MISS',
                 'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
             ];
         } else {
             $nice['profile_picture'] = [
-                'public_url' => app('url')->asset('static/' . sha1($nice['Id_card_num']) . '.jpg'),
+                'public_url' => app('url')->asset('static/' . sha1($nice['ID_card_number']) . '.jpg'),
                 'cache' => 'HIT',
                 'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
             ];
