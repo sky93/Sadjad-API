@@ -1,4 +1,4 @@
-[![Sadjad University API](banner.png)](https://api.sadjad.ac.ir/)
+[![Sadjad University API](http://3.1m.yt/_jkjLdr.png)](https://api.sadjad.ac.ir/)
 
 # Sadjad University API
 A simple, lightweight and fast API for Sadjad University of Technology
