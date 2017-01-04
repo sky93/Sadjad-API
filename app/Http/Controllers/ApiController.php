@@ -88,7 +88,8 @@ class ApiController extends Controller
                             ],
                             'v2' => [
                                 '/v2/stu/profile',
-                                '/v2/stu/schedule'
+                                '/v2/stu/schedule',
+                                '/v2/stu/exam_card'
                             ]
                         ],
                     'source' => 'https://github.com/sut-it/Sadjad-API',
@@ -97,6 +98,158 @@ class ApiController extends Controller
                     'licence' => 'https://github.com/sut-it/Sadjad-API#license',
                 ]
         ], 200);
+    }
+
+
+    public function v2_stu_exam_card(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        $persian_numbers = [
+            '۰' => '0', '٠' => '0',
+            '۱' => '1', '١' => '1',
+            '۲' => '2', '٢' => '2',
+            '۳' => '3', '٣' => '3',
+            '۴' => '4', '٤' => '4',
+            '۵' => '5', '٥' => '5',
+            '۶' => '6', '٦' => '6',
+            '۷' => '7', '٧' => '7',
+            '۸' => '8', '٨' => '8',
+            '۹' => '9', '٩' => '9',
+        ];
+
+        $auth = http_build_query([
+            'StID' => strtr($request->input('username'), $persian_numbers),
+            'UserPassword' => strtr($request->input('password'), $persian_numbers)
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/Interim.php');
+        curl_setopt($ch,CURLOPT_POST,2);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $auth);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_exec($ch);
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/strcss/StExamDaysSpecForm.php');
+        $result = curl_exec($ch);
+        $dom = new \domDocument;
+        @$dom->loadHTML($result);
+        if (strpos($dom->textContent, ' درخواستبنا به دلایل امنیتی ادامه استفاده شما از سیستم منوط به ورود مجدد به سیستم استلطفا برای ورود مجدد ب')){
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
+
+        $file = app()->basePath('public/static/') . sha1($request->input('username') . $request->input('username')) . '.pdf';
+        if (!
+            ( file_exists($file) && time() > filemtime ($file) + 31 * 24 * 60 * 60 ) ||
+            ! file_exists($file)
+        ) {
+            @unlink($file);
+
+            $result = '<style>@font-face{font-family: IRANSans; font-style: normal; font-weight: bold; src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Bold.eot\'); src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Boldd41d.eot?#iefix\') format(\'embedded-opentype\'), /* IE6-8 */ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff2/IRANSansWeb_Bold.woff2\') format(\'woff2\'), /* FF39+,Chrome36+, Opera24+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff/IRANSansWeb_Bold.woff\') format(\'woff\'), /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/ttf/IRANSansWeb_Bold.ttf\') format(\'truetype\');}@font-face{font-family: IRANSans; font-style: normal; font-weight: 500; src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Medium.eot\'); src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Mediumd41d.eot?#iefix\') format(\'embedded-opentype\'), /* IE6-8 */ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff2/IRANSansWeb_Medium.woff2\') format(\'woff2\'), /* FF39+,Chrome36+, Opera24+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff/IRANSansWeb_Medium.woff\') format(\'woff\'), /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/ttf/IRANSansWeb_Medium.ttf\') format(\'truetype\');}@font-face{font-family: IRANSans; font-style: normal; font-weight: 300; src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Light.eot\'); src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_Lightd41d.eot?#iefix\') format(\'embedded-opentype\'), /* IE6-8 */ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff2/IRANSansWeb_Light.woff2\') format(\'woff2\'), /* FF39+,Chrome36+, Opera24+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff/IRANSansWeb_Light.woff\') format(\'woff\'), /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/ttf/IRANSansWeb_Light.ttf\') format(\'truetype\');}@font-face{font-family: IRANSans; font-style: normal; font-weight: 200; src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_UltraLight.eot\'); src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb_UltraLightd41d.eot?#iefix\') format(\'embedded-opentype\'), /* IE6-8 */ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff2/IRANSansWeb_UltraLight.woff2\') format(\'woff2\'), /* FF39+,Chrome36+, Opera24+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff/IRANSansWeb_UltraLight.woff\') format(\'woff\'), /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/ttf/IRANSansWeb_UltraLight.ttf\') format(\'truetype\');}@font-face{font-family: IRANSans; font-style: normal; font-weight: normal; src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWeb.eot\'); src: url(\'https://acm.sadjad.ac.ir/dist/fonts/eot/IRANSansWebd41d.eot?#iefix\') format(\'embedded-opentype\'), /* IE6-8 */ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff2/IRANSansWeb.woff2\') format(\'woff2\'), /* FF39+,Chrome36+, Opera24+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/woff/IRANSansWeb.woff\') format(\'woff\'), /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url(\'https://acm.sadjad.ac.ir/dist/fonts/ttf/IRANSansWeb.ttf\') format(\'truetype\');}*{font-family: IRANSans, Tahoma, "Helvetica Neue", Helvetica, Arial, sans-serif!important;}</style>'
+                . $result;
+            $profile_pic_url =  $this->get_string_between($result, '<img style=\'height:135; width:105; top:20; left :40; position:absolute;\' src="', '"></img>');
+            $login = [
+                'username' => strtr($request->input('username'), $persian_numbers),
+                'password' => strtr($request->input('password'), $persian_numbers)
+            ];
+            $all = file_get_contents('https://api.sadjad.ac.ir/v2/stu/profile?' . http_build_query($login));
+            $json = json_decode($all);
+
+            if ( $json->meta->message == 'OK' ) {
+                $profile_pic = $json->data->profile_picture->public_url;
+            } else {
+                $time_end = $this->microtime_float();
+                $time = $time_end - $time_start;
+                return response()->json([
+                    'meta' =>
+                        [
+                            'code' => 403,
+                            'message' => 'Forbidden',
+                            'connect_time' => $time
+                        ],
+                ], 403);
+            }
+
+            $result = str_replace('/rcssimgs/logo.gif', 'http://stu.sadjad.ac.ir/rcssimgs/logo.gif', $result);
+            $result = str_replace($profile_pic_url, $profile_pic, $result);
+            $result = str_replace('/rcssimgs/stamp.gif', 'http://stu.sadjad.ac.ir/rcssimgs/stamp.gif', $result);
+            $result = str_replace('<br><br><br><br><br><br><br>', '', $result);
+
+            $data = array('convert' => '',
+                'html' => $result
+            );
+
+            $options = array(
+                'http' => array(
+                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method'  => 'POST',
+                    'content' => http_build_query($data),
+                ),
+            );
+            $context  = stream_context_create($options);
+            $result = file_get_contents('http://freehtmltopdf.com', false, $context);
+
+            file_put_contents($file, $result);
+
+            $PDF_public_url = [
+                'public_url' => app('url')->asset('static/' . sha1($request->input('username') . $request->input('username')) . '.pdf'),
+                'cache' => 'MISS',
+                'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
+            ];
+        } else {
+            $PDF_public_url = [
+                'public_url' => app('url')->asset('static/' . sha1($request->input('username') . $request->input('username')) . '.pdf'),
+                'cache' => 'HIT',
+                'cache_expires_at' => filemtime ($file) + 31 * 24 * 60 * 60
+            ];
+        }
+
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => $PDF_public_url
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
 

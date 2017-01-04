@@ -53,6 +53,16 @@ Supported methods are `post` and `get`
 
 Returns useful information about stu (student) account.
 
+---
+### `/v2/stu/exam_card`
+Sample: `https://api.sadjad.ac.ir/v2/stu/exam_card?username=92412147&password=XXXXXXXX`
+
+Supported methods are `post` and `get`
+
+Returns exams card in PDF format.
+
+_Note: This endpoint works only in exams duration._
+
 ## Important Privacy Note
 As you see in the code no information are stored. We don't even use databases or log files. The username or password you provide is only used for loging in to the student panel.
 

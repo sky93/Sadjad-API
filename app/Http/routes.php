@@ -44,6 +44,22 @@ $app->group(['prefix' => 'v2'], function () use ($app) {
         $app->get('profile', ['uses' => 'ApiController@v2_stu_profile']);
         $app->post('profile', ['uses' => 'ApiController@v2_stu_profile']);
 
+        $app->get('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
+        $app->post('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
+
+    });
+
+    $app->group(['prefix' => 'self_service'], function () use ($app) {
+
+        $app->get('credits', ['uses' => 'ApiController@self_service_credits']);
+        $app->post('credits', ['uses' => 'ApiController@self_service_credits']);
+
+        $app->get('menu', ['uses' => 'ApiController@self_service_menu']);
+        $app->post('menu', ['uses' => 'ApiController@self_service_menu']);
+
+        $app->get('reserve', ['uses' => 'ApiController@self_service_reserve']);
+        $app->post('reserve', ['uses' => 'ApiController@self_service_reserve']);
+
     });
 
 });
