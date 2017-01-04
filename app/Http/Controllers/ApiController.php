@@ -174,7 +174,7 @@ class ApiController extends Controller
         }
 
         $file = app()->basePath('public/static/') . sha1($request->input('username') . $request->input('username')) . '.pdf';
-        if (!
+        if (
             ( file_exists($file) && time() > filemtime ($file) + 31 * 24 * 60 * 60 ) ||
             ! file_exists($file)
         ) {
