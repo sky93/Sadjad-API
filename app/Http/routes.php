@@ -47,6 +47,9 @@ $app->group(['prefix' => 'v2'], function () use ($app) {
         $app->get('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
         $app->post('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
 
+        $app->get('grades', ['uses' => 'ApiController@v2_stu_grades']);
+        $app->post('grades', ['uses' => 'ApiController@v2_stu_grades']);
+
     });
 
     $app->group(['prefix' => 'self_service'], function () use ($app) {

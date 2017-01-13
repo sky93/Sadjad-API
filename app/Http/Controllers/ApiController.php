@@ -89,7 +89,13 @@ class ApiController extends Controller
                             'v2' => [
                                 '/v2/stu/profile',
                                 '/v2/stu/schedule',
-                                '/v2/stu/exam_card'
+                                '/v2/stu/exam_card',
+                                '/v2/stu/grades' => [
+                                    'extra_parameters' => [
+                                        'year',
+                                        'semester'
+                                    ]
+                                ],
                             ]
                         ],
                     'source' => 'https://github.com/sut-it/Sadjad-API',
@@ -98,6 +104,140 @@ class ApiController extends Controller
                     'licence' => 'https://github.com/sut-it/Sadjad-API#license',
                 ]
         ], 200);
+    }
+
+    public function v2_stu_grades(Request $request)
+    {
+        $errors = [];
+        $time_start = $this->microtime_float();
+        if (! $request->input('username')){
+            $errors[] = 'username is not provided.';
+        }
+        if (! $request->input('password')){
+            $errors[] = 'password is not provided.';
+        }
+        if (count($errors)) {
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 400,
+                        'message' => 'Bad Request',
+                        'error' => $errors
+                    ]
+            ], 400);
+        }
+
+        // If user's input has Arabic/Persian numbers, we change it to standard english numbers
+        $persian_numbers = [
+            '۰' => '0', '٠' => '0',
+            '۱' => '1', '١' => '1',
+            '۲' => '2', '٢' => '2',
+            '۳' => '3', '٣' => '3',
+            '۴' => '4', '٤' => '4',
+            '۵' => '5', '٥' => '5',
+            '۶' => '6', '٦' => '6',
+            '۷' => '7', '٧' => '7',
+            '۸' => '8', '٨' => '8',
+            '۹' => '9', '٩' => '9',
+        ];
+
+        $auth = http_build_query([
+            'StID' => strtr($request->input('username'), $persian_numbers),
+            'UserPassword' => strtr($request->input('password'), $persian_numbers)
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/Interim.php');
+        curl_setopt($ch,CURLOPT_POST, 2);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $auth);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_COOKIESESSION, 1);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_exec($ch);
+
+        if ( $request->input('year') && $request->input('semester') ) {
+            $other_semester = http_build_query([
+                'btn_prev' => '',
+                'EduYear' => $request->input('year'),
+                'semester' => $request->input('semester'),
+                'StNo' => $request->input('username')
+            ]);
+            curl_setopt($ch,CURLOPT_POST, 3);
+            curl_setopt($ch,CURLOPT_POSTFIELDS, $other_semester);
+        }
+
+        curl_setopt($ch,CURLOPT_URL, 'http://stu.sadjad.ac.ir/strcss/ShowEducationalLogFromGradeList.php');
+        $result = curl_exec($ch);
+        $dom = new \domDocument;
+        @$dom->loadHTML($result);
+        if (strpos($dom->textContent, ' درخواستبنا به دلایل امنیتی ادامه استفاده شما از سیستم منوط به ورود مجدد به سیستم استلطفا برای ورود مجدد ب')){
+            $time_end = $this->microtime_float();
+            $time = $time_end - $time_start;
+
+            return response()->json([
+                'meta' =>
+                    [
+                        'code' => 403,
+                        'message' => 'Forbidden',
+                        'connect_time' => $time
+                    ],
+            ], 403);
+        }
+
+        $rows = $dom->getElementsByTagName('tr');
+        $row = [];
+        $sum = 0;
+        $count  = 0;
+        $excluded_courses = [];
+        foreach ($rows as $r) {
+
+            $tds = $r->getElementsByTagName('td');
+            if ($tds->length < 7) {
+                continue;
+            }
+
+            if ( trim($tds->item(6)->textContent) != 'گزارش نشده') {
+                $sum += (float)$tds->item(3)->textContent * (float)$tds->item(5)->textContent;
+                $count += (int)$tds->item(3)->textContent;
+            } else {
+                $excluded_courses[] = trim($tds->item(2)->textContent);
+            }
+
+            $row[] = [
+                'course_name' => trim($tds->item(2)->textContent),
+                'credits' => (int)$tds->item(3)->textContent,
+                'teacher' => trim($tds->item(4)->textContent),
+                'grade' => (float)$tds->item(5)->textContent,
+                'grade_status' => trim($tds->item(6)->textContent),
+                'status' => $tds->length > 7 ? trim($tds->item(8)->textContent) : null
+            ];
+
+        }
+
+        $time_end = $this->microtime_float();
+        $time = $time_end - $time_start;
+        return response()->json([
+            'meta' =>
+                [
+                    'code' => 200,
+                    'message' => 'OK',
+                    'connect_time' =>$time
+                ],
+            'data' => [
+                'grades' => $row,
+                'average' => $row ? [
+                    'average' => round($sum / $count, 2),
+                    'excluded_courses' => $excluded_courses
+                ] : null
+            ]
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+
     }
 
 
@@ -532,6 +672,7 @@ class ApiController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
+
     public function exams(Request $request)
     {
         $errors = [];
@@ -646,6 +787,7 @@ class ApiController extends Controller
             'data' => $result
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
+
 
     public function self_service_menu(Request $request)
     {
@@ -811,7 +953,7 @@ class ApiController extends Controller
         curl_setopt($ch, CURLOPT_COOKIEFILE, '-');
         curl_setopt($ch, CURLOPT_COOKIEJAR, '-');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
-        $x = curl_exec($ch);
+        curl_exec($ch);
         curl_setopt($ch, CURLOPT_URL, "http://178.236.33.131/Reserve.aspx");
         curl_setopt($ch, CURLOPT_POST, 0);
         $x = curl_exec($ch);
@@ -946,6 +1088,7 @@ class ApiController extends Controller
             ]
         ]);
     }
+
 
     public function stu_class(Request $request)
     {
@@ -1091,13 +1234,6 @@ class ApiController extends Controller
                         'subject' => str_replace('فرد','', $cl)
                     ]);
                 }
-//                if (strpos($raw[$i], 'پروژه') !== false){
-//                    $time += 1;
-//                    $hour += 1;
-//                } else {
-//                    $time += 2;
-//                    $hour += 2;
-//                } // poor coding abilities!
 
                 $time += $colspan[$i];
                 $hour += $colspan[$i];

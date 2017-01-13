@@ -63,6 +63,33 @@ Returns exams card in PDF format.
 
 _Note: This endpoint works only in exams duration._
 
+---
+### `/v2/stu/grades`
+Samples: 
+
+`https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX`
+`https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX&year=1392&semester=1`
+`https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX&year=1394&semester=3`
+
+Supported methods are `post` and `get`
+
+#### Additional Parameters
+
+| Semester      | Meaning      |
+|---------------|--------------|
+| year | Desired year |
+| semester | Number of semester |
+
+_Note: If `year` and `semster` parameters are not provided, current year and current semester will be assumed._
+
+#####Semester accepted values
+
+| Semester      | Meaning      |
+|---------------|--------------|
+| 1 | 1st semester |
+| 2 | 2nd semester |
+| 3 | Summer semester |
+
 ## Important Privacy Note
 As you see in the code no information are stored. We don't even use databases or log files. The username or password you provide is only used for loging in to the student panel.
 
