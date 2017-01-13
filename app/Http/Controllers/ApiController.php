@@ -231,7 +231,7 @@ class ApiController extends Controller
                 ],
             'data' => [
                 'grades' => $row,
-                'average' => $row ? [
+                'average' => $count > 0 ? [
                     'average' => round($sum / $count, 2),
                     'excluded_courses' => $excluded_courses
                 ] : null
