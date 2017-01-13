@@ -68,7 +68,9 @@ _Note: This endpoint works only in exams duration._
 Samples: 
 
 `https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX`
+
 `https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX&year=1392&semester=1`
+
 `https://api.sadjad.ac.ir/v2/stu/grades?username=92412147&password=XXXXXXXX&year=1394&semester=3`
 
 Supported methods are `post` and `get`
