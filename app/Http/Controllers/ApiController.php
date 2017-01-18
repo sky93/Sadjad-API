@@ -202,7 +202,8 @@ class ApiController extends Controller
                 continue;
             }
 
-            if ( trim($tds->item(6)->textContent) != 'گزارش نشده') {
+            $last_status = trim($tds->length > 7 ? $tds->item(8)->textContent : $tds->item(6)->textContent);
+            if ( $last_status != 'خام' ) {
                 $sum += (float)$tds->item(3)->textContent * (float)$tds->item(5)->textContent;
                 $count += (int)$tds->item(3)->textContent;
             } else {
