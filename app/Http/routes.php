@@ -15,9 +15,6 @@ $app->get('/', ['uses' => 'ApiController@end_points']);
 
 
 $app->group(['prefix' => 'v1'], function () use ($app) {
-    $app->get('student_schedule', ['uses' => 'ApiController@stu_class']);
-    $app->post('student_schedule', ['uses' => 'ApiController@stu_class']);
-
     $app->get('internet_credit', ['uses' => 'ApiController@internet_credit']);
     $app->post('internet_credit', ['uses' => 'ApiController@internet_credit']);
 
@@ -27,8 +24,8 @@ $app->group(['prefix' => 'v1'], function () use ($app) {
     $app->get('self_service_menu', ['uses' => 'ApiController@self_service_menu']);
     $app->post('self_service_menu', ['uses' => 'ApiController@self_service_menu']);
 
-    $app->get('exams', ['uses' => 'ApiController@exams']);
-    $app->post('exams', ['uses' => 'ApiController@exams']);
+    $app->get('exams', ['uses' => 'StuController@exams']);
+    $app->post('exams', ['uses' => 'StuController@exams']);
 
     $app->get('library', ['uses' => 'ApiController@library']);
     $app->post('library', ['uses' => 'ApiController@library']);
@@ -38,17 +35,17 @@ $app->group(['prefix' => 'v2'], function () use ($app) {
 
     $app->group(['prefix' => 'stu'], function () use ($app) {
 
-        $app->get('schedule', ['uses' => 'ApiController@stu_class']);
-        $app->post('schedule', ['uses' => 'ApiController@stu_class']);
+        $app->get('schedule', ['uses' => 'StuController@stu_class']);
+        $app->post('schedule', ['uses' => 'StuController@stu_class']);
 
-        $app->get('profile', ['uses' => 'ApiController@v2_stu_profile']);
-        $app->post('profile', ['uses' => 'ApiController@v2_stu_profile']);
+        $app->get('profile', ['uses' => 'StuController@v2_stu_profile']);
+        $app->post('profile', ['uses' => 'StuController@v2_stu_profile']);
 
-        $app->get('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
-        $app->post('exam_card', ['uses' => 'ApiController@v2_stu_exam_card']);
+        $app->get('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
+        $app->post('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
 
-        $app->get('grades', ['uses' => 'ApiController@v2_stu_grades']);
-        $app->post('grades', ['uses' => 'ApiController@v2_stu_grades']);
+        $app->get('grades', ['uses' => 'StuController@v2_stu_grades']);
+        $app->post('grades', ['uses' => 'StuController@v2_stu_grades']);
 
     });
 
