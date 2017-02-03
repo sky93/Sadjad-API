@@ -87,15 +87,59 @@ class ApiController extends Controller
                                 '/v1/library',
                             ],
                             'v2' => [
-                                '/v2/stu/profile',
-                                '/v2/stu/schedule',
-                                '/v2/stu/exam_card',
-                                '/v2/stu/grades' => [
-                                    'extra_parameters' => [
-                                        'year',
-                                        'semester'
+                                'internet' => [
+                                    [
+                                        'end_point' => '/v2/internet/connection_report',
+                                        'parameters' => [
+                                            'username',
+                                            'password',
+                                            'page',
+                                            'start',
+                                            'end'
+                                        ]
+                                    ],
+                                    [
+                                        'end_point' => '/v2/internet/credits',
+                                        'parameters' => [
+                                            'username',
+                                            'password'
+                                        ]
                                     ]
                                 ],
+
+                                'stu' => [
+                                    [
+                                        'end_point' => '/v2/stu/profile',
+                                        'parameters' => [
+                                            'username',
+                                            'password'
+                                        ]
+                                    ],
+                                    [
+                                        'end_point' => '/v2/stu/schedule',
+                                        'parameters' => [
+                                            'username',
+                                            'password'
+                                        ]
+                                    ],
+                                    [
+                                        'end_point' => '/v2/stu/exam_card',
+                                        'parameters' => [
+                                            'username',
+                                            'password'
+                                        ]
+                                    ],
+                                    [
+                                        'end_point' => '/v2/stu/grades',
+                                        'parameters' => [
+                                            'username',
+                                            'password',
+                                            'year',
+                                            'semester'
+                                        ]
+                                    ],
+                                ],
+
                             ]
                         ],
                     'source' => 'https://github.com/sut-it/Sadjad-API',

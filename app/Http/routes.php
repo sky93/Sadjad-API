@@ -49,6 +49,16 @@ $app->group(['prefix' => 'v2'], function () use ($app) {
 
     });
 
+    $app->group(['prefix' => 'internet'], function () use ($app) {
+
+        $app->get('credits', ['uses' => 'InternetController@credits']);
+        $app->post('credits', ['uses' => 'InternetController@credits']);
+
+        $app->get('connection_report', ['uses' => 'InternetController@connection_report']);
+        $app->post('connection_report', ['uses' => 'InternetController@connection_report']);
+
+    });
+
     $app->group(['prefix' => 'self_service'], function () use ($app) {
 
         $app->get('credits', ['uses' => 'ApiController@self_service_credits']);

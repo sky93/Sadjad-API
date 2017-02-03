@@ -18,7 +18,7 @@ Sample: `https://api.sadjad.ac.ir/v1/internet_credit?username=92412147&password=
 Supported methods are `post` and `get`
 
 ---
-### `/v1/self_service_credits`
+### `/v1/self_service_credits` or `/v2/internet/credits`
 Sample: `https://api.sadjad.ac.ir/v1/self_service_credits?username=92412147&password=XXXXXXXX`
 
 Supported methods are `post` and `get`
@@ -91,6 +91,24 @@ _Note: If `year` and `semster` parameters are not provided, current year and cur
 | 1 | 1st semester |
 | 2 | 2nd semester |
 | 3 | Summer semester |
+
+---
+### `/v2/internet/connection_report`
+Samples: 
+
+`http://localhost/sadjad_api/Sadjad-API/public/v2/internet/connection_report?username=92412147&password=XXXXXXXXX&start=XXXXXXXXX&end=XXXXXXXXX&page=1`
+
+Supported methods are `post` and `get`
+
+#### Additional Parameters
+
+| Semester      | Meaning      |
+|---------------|--------------|
+| start | Start time _(unix format)_ |
+| end | End time _(unix format)_ |
+| start | Desired page _(default: `1`)_ |
+
+
 
 ## Important Privacy Note
 As you see in the code no information are stored. We don't even use databases or log files. The username or password you provide is only used for loging in to the student panel.
