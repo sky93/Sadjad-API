@@ -13,6 +13,7 @@ class InternetController extends Controller
     {
         $status = 'OK';
         $errors = [];
+        $response = null;
 
         if (! $username ){
             $errors[] = 'username is not provided.';
@@ -21,14 +22,17 @@ class InternetController extends Controller
             $errors[] = 'password is not provided.';
         }
         if (count($errors)) {
-            return response()->json([
-                'meta' =>
-                    [
-                        'code' => 400,
-                        'message' => 'Bad Request',
-                        'error' => $errors
-                    ]
-            ], 400);
+            return [
+                'status' => 'WRONG',
+                'response' => response()->json([
+                    'meta' =>
+                        [
+                            'code' => 400,
+                            'message' => 'Bad Request',
+                            'error' => $errors
+                        ]
+                ], 400)
+            ];
         }
 
         $auth = http_build_query([
@@ -93,6 +97,10 @@ class InternetController extends Controller
 
         $login = $this->IBSng_login( $request->input('username'), $request->input('password') );
 
+        if ( $login['status'] == 'WRONG' ) {
+            return $login['response'];
+        }
+
         if ( $login['status'] == 'FORBIDDEN' ) {
             $time_end = functions::microtime_float();
             $time = $time_end - $time_start;
@@ -143,6 +151,10 @@ class InternetController extends Controller
         $time_start = functions::microtime_float();
 
         $login = $this->IBSng_login( $request->input('username'), $request->input('password') );
+
+        if ( $login['status'] == 'WRONG' ) {
+            return $login['response'];
+        }
 
         if ( $login['status'] == 'FORBIDDEN' ) {
             $time_end = functions::microtime_float();
