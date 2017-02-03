@@ -79,7 +79,7 @@ class ApiController extends Controller
                     'end_points' =>
                         [
                             'v1' => [
-                                '/v1/student_schedule',
+                                //'/v1/student_schedule',
                                 '/v1/internet_credit',
                                 '/v1/self_service_credits',
                                 '/v1/self_service_menu',
@@ -105,40 +105,40 @@ class ApiController extends Controller
                                             'password'
                                         ]
                                     ]
-                                ],
+                                ]
 
-                                'stu' => [
-                                    [
-                                        'end_point' => '/v2/stu/profile',
-                                        'parameters' => [
-                                            'username',
-                                            'password'
-                                        ]
-                                    ],
-                                    [
-                                        'end_point' => '/v2/stu/schedule',
-                                        'parameters' => [
-                                            'username',
-                                            'password'
-                                        ]
-                                    ],
-                                    [
-                                        'end_point' => '/v2/stu/exam_card',
-                                        'parameters' => [
-                                            'username',
-                                            'password'
-                                        ]
-                                    ],
-                                    [
-                                        'end_point' => '/v2/stu/grades',
-                                        'parameters' => [
-                                            'username',
-                                            'password',
-                                            'year',
-                                            'semester'
-                                        ]
-                                    ],
-                                ],
+//                                'stu' => [
+//                                    [
+//                                        'end_point' => '/v2/stu/profile',
+//                                        'parameters' => [
+//                                            'username',
+//                                            'password'
+//                                        ]
+//                                    ],
+//                                    [
+//                                        'end_point' => '/v2/stu/schedule',
+//                                        'parameters' => [
+//                                            'username',
+//                                            'password'
+//                                        ]
+//                                    ],
+//                                    [
+//                                        'end_point' => '/v2/stu/exam_card',
+//                                        'parameters' => [
+//                                            'username',
+//                                            'password'
+//                                        ]
+//                                    ],
+//                                    [
+//                                        'end_point' => '/v2/stu/grades',
+//                                        'parameters' => [
+//                                            'username',
+//                                            'password',
+//                                            'year',
+//                                            'semester'
+//                                        ]
+//                                    ],
+//                                ]
 
                             ]
                         ],

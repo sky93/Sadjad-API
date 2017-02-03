@@ -33,21 +33,21 @@ $app->group(['prefix' => 'v1'], function () use ($app) {
 
 $app->group(['prefix' => 'v2'], function () use ($app) {
 
-    $app->group(['prefix' => 'stu'], function () use ($app) {
-
-        $app->get('schedule', ['uses' => 'StuController@stu_class']);
-        $app->post('schedule', ['uses' => 'StuController@stu_class']);
-
-        $app->get('profile', ['uses' => 'StuController@v2_stu_profile']);
-        $app->post('profile', ['uses' => 'StuController@v2_stu_profile']);
-
-        $app->get('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
-        $app->post('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
-
-        $app->get('grades', ['uses' => 'StuController@v2_stu_grades']);
-        $app->post('grades', ['uses' => 'StuController@v2_stu_grades']);
-
-    });
+//    $app->group(['prefix' => 'stu'], function () use ($app) {
+//
+//        $app->get('schedule', ['uses' => 'StuController@stu_class']);
+//        $app->post('schedule', ['uses' => 'StuController@stu_class']);
+//
+//        $app->get('profile', ['uses' => 'StuController@v2_stu_profile']);
+//        $app->post('profile', ['uses' => 'StuController@v2_stu_profile']);
+//
+//        $app->get('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
+//        $app->post('exam_card', ['uses' => 'StuController@v2_stu_exam_card']);
+//
+//        $app->get('grades', ['uses' => 'StuController@v2_stu_grades']);
+//        $app->post('grades', ['uses' => 'StuController@v2_stu_grades']);
+//
+//    });
 
     $app->group(['prefix' => 'internet'], function () use ($app) {
 
